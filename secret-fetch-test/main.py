@@ -15,21 +15,17 @@ same as every other node in this repo (see hello-csv-source/main.py).
 Resource Environment Variables used here:
   BACKEND_URL   cluster-internal backend base URL
   API_KEY       bearer credential resolved server-side to this node's owner
-  ARTIFACT_S3_* artifact bucket credentials, for writing the output file
 """
 
 import hashlib
-import io
 import json
 import os
 import sys
 
 import env_sdk
-import storage_v2 as boto3
-import requests
-from botocore.client import Config
+import storage_v2
 
-NODE_VERSION = "2026-09-24.1"
+NODE_VERSION = "2026-09-24.2"
 
 
 def log(msg):
@@ -45,28 +41,6 @@ def parse_context():
     if not raw:
         raise ValueError("NODE_CONTEXT is required")
     return json.loads(raw)
-
-
-def split_s3(s3_path):
-    rest = s3_path[len("s3://"):] if s3_path.startswith("s3://") else s3_path
-    bucket, _, key = rest.partition("/")
-    return bucket, key
-
-
-def get_s3_client(prefix):
-    endpoint = os.environ[f"{prefix}_S3_ENDPOINT"]
-    use_ssl = os.environ.get(f"{prefix}_S3_USE_SSL", "false").lower() == "true"
-    if "://" not in endpoint:
-        endpoint = ("https://" if use_ssl else "http://") + endpoint
-    return boto3.client(
-        "s3",
-        endpoint_url=endpoint,
-        aws_access_key_id=os.environ[f"{prefix}_S3_ACCESS_KEY"],
-        aws_secret_access_key=os.environ[f"{prefix}_S3_SECRET_KEY"],
-        aws_session_token=os.environ.get(f"{prefix}_S3_SESSION_TOKEN") or None,
-        region_name=os.environ.get(f"{prefix}_S3_REGION", "us-east-1"),
-        config=Config(signature_version="s3v4"),
-    )
 
 
 def main():
@@ -111,20 +85,15 @@ def main():
         data = json.dumps(result, indent=2).encode("utf-8")
         log(f"Writing {len(data)} bytes of proof JSON")
 
-        os.environ.setdefault("AWS_REQUEST_CHECKSUM_CALCULATION", "when_required")
-        os.environ.setdefault("AWS_RESPONSE_CHECKSUM_VALIDATION", "when_required")
-
+        # main_file["path"] is "s3://bucket/{userId}/rest/of/path" (from
+        # NODE_CONTEXT) -- storage_v2.write_bytes() wants the path relative to
+        # the caller's own prefix, i.e. everything after "{userId}/".
         main_file = out_files[0]
-        main_presigned_url = main_file.get("presignedUrl")
-        if main_presigned_url:
-            log(f"Uploading -> {main_file['path']} via presigned URL...")
-            resp = requests.put(main_presigned_url, data=data, timeout=300)
-            resp.raise_for_status()
-        else:
-            artifact_s3 = get_s3_client("ARTIFACT")
-            dest_bucket, dest_key = split_s3(main_file["path"])
-            log(f"Uploading -> s3://{dest_bucket}/{dest_key} ...")
-            artifact_s3.put_object(Bucket=dest_bucket, Key=dest_key, Body=data)
+        s3_path = main_file["path"]
+        rest = s3_path[len("s3://"):] if s3_path.startswith("s3://") else s3_path
+        relative_path = "/".join(rest.split("/")[2:])  # drop "bucket/{userId}"
+        log(f"Uploading -> {main_file['path']} via storage_v2.write_bytes()...")
+        storage_v2.write_bytes(relative_path, data, content_type="application/json")
 
         log(f"Completed OK (version {NODE_VERSION})")
         print(json.dumps({
