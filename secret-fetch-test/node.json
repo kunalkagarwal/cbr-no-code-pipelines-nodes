@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "nodeType": "processing",
+  "name": "Secret Fetch Test",
+  "shortDescription": "Fetches a named secret via pipeline_sdk.env.get_secret() and reports whether it worked — proves the secret manager works inside a real running node",
+  "description": "A minimal source node (no upstream input) that calls pipeline_sdk.env.get_secret(secretName) at run time and writes a small proof file: whether the fetch succeeded, the value's length, and a SHA-256 hash of the value. The real value is never printed to logs or written to any output.",
+  "lucideIcon": "KeyRound",
+  "color": "#6366f1",
+  "hasInput": false,
+  "inputDescription": "",
+  "config": {
+    "name": {
+      "type": "string",
+      "label": "Name",
+      "description": "Unique identifier for this node in the pipeline",
+      "required": true,
+      "unique": true,
+      "placeholder": "e.g. secret_fetch_test",
+      "validation": {
+        "patternKey": "snake_case"
+      }
+    },
+    "secretName": {
+      "type": "string",
+      "label": "Secret Name",
+      "description": "Name of the secret to fetch from the Secret Manager (must match a name you stored in your profile menu's Secrets panel)",
+      "required": true,
+      "unique": false,
+      "placeholder": "e.g. TEST_SECRET",
+      "validation": {
+        "patternKey": "snake_case"
+      }
+    }
+  },
+  "hasOutput": true,
+  "outputDescription": "A JSON proof file: whether the secret was fetched, its length, and a hash — never the raw value",
+  "outputFiles": [
+    {
+      "name": "result",
+      "format": "json",
+      "path": "{{artifacts}}/{{pipeline.name}}/{{execution.timestamp}}/{{node.name}}/result.json"
+    }
+  ],
+  "implementation": {
+    "type": "container",
+    "entrypoint": "python main.py"
+  }
+}
