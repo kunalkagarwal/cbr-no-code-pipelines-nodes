@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import os
 
+import log_mask
 import storage_v2 as storage
 
 __all__ = [
@@ -149,7 +150,7 @@ class S3Env:
 )"""
 
 
-def get_secret(name: str) -> str:
+def get_secret(name: str, *, mask: bool = True) -> str:
     """Fetch one of the caller's own secrets by name (docs/SECRET_MANAGER.md) —
     a value the user stored once via the secret-manager UI panel, never
     written into this node's config or the saved pipeline. Named "get_secret",
@@ -157,6 +158,11 @@ def get_secret(name: str) -> str:
     every call round-trips to the backend (which holds the real credential in
     OpenBao), so a secret added or changed after this pod started is picked up
     immediately — there is no pod-restart problem for it to have.
+
+    By default the returned value is also registered for log masking: from now
+    on, anything this process prints that contains it shows `[REDACTED]`
+    instead (see log_mask.py for what that does and does not cover). Pass
+    `mask=False` only to opt out, e.g. a demo that must show the raw value.
 
     Raises EnvError if no secret with that name exists for this user, or if
     the secret manager feature is unavailable in this deployment.
@@ -170,6 +176,8 @@ def get_secret(name: str) -> str:
     value = response.get("value")
     if not isinstance(value, str):
         raise EnvError(f"Secret {name!r}: malformed response from backend")
+    if mask:
+        log_mask.register(value)
     return value
 
 
