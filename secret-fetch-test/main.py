@@ -7,11 +7,8 @@ works from inside a REAL running custom node pod, not a script pretending
 to be one. Calls env_sdk.get_secret(secretName) at run time and writes a
 proof file: whether the fetch succeeded, the value's length, and a
 SHA-256 hash of the value. The real secret value is never written to any
-output file, and is not printed to logs -- except when the "printSecretValue"
-demo switch is on, which exists to show log masking: with masking on (the
-default) the SDK replaces the value with [REDACTED] in the logs; with the
-"disableLogMasking" switch on, the raw value appears in plain text (the risk
-masking protects against).
+output file. The node also prints the value to its own log, which is safe only
+because the SDK masks every secret it hands out: the log shows [REDACTED].
 
 Follows the NodeContext contract - receives a single NODE_CONTEXT JSON,
 same as every other node in this repo (see hello-csv-source/main.py).
@@ -29,7 +26,7 @@ import sys
 import env_sdk
 import storage_v2
 
-NODE_VERSION = "2026-10-08.1"
+NODE_VERSION = "2026-10-08.2"
 
 
 def log(msg):
@@ -56,20 +53,12 @@ def main():
         config = ctx["config"]
         out_files = ctx["output"]["files"]
         secret_name = config["secretName"]
-        print_secret = bool(config.get("printSecretValue", False))
-        # Boolean fields have no default in the node contract (an untouched toggle
-        # is off), so the switch is phrased "disable": off = masking on.
-        mask_logs = not bool(config.get("disableLogMasking", False))
 
         log(f"Node: {node['name']} | Fetching secret named {secret_name!r} via env_sdk.get_secret()")
-        log(f"Demo switches: printSecretValue={print_secret} logMasking={mask_logs}")
 
         try:
-            value = env_sdk.get_secret(secret_name, mask=mask_logs)
-            if print_secret:
-                # Deliberate leak, for the demo only: with masking on this prints
-                # [REDACTED]; with masking off the real value lands in the logs.
-                log(f"DEMO: the secret value is {value}")
+            value = env_sdk.get_secret(secret_name)
+            log(f"Secret value: {value}")
             value_len = len(value)
             value_hash = hashlib.sha256(value.encode("utf-8")).hexdigest()
             log(f"Fetched OK. length={value_len} sha256={value_hash[:16]}...")
@@ -80,8 +69,6 @@ def main():
                 "fetched": True,
                 "valueLength": value_len,
                 "valueSha256": value_hash,
-                "logMasking": mask_logs,
-                "demoPrintedSecret": print_secret,
                 "note": "The real secret value is never included here or in any log line.",
             }
         except env_sdk.EnvError as e:
