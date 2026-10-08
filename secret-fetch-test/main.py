@@ -8,9 +8,10 @@ to be one. Calls env_sdk.get_secret(secretName) at run time and writes a
 proof file: whether the fetch succeeded, the value's length, and a
 SHA-256 hash of the value. The real secret value is never written to any
 output file, and is not printed to logs -- except when the "printSecretValue"
-demo switch is on, which exists to show log masking: with "maskSecretsInLogs"
-on (the default) the SDK replaces the value with [REDACTED] in the logs; with
-it off, the raw value appears in plain text (the risk masking protects against).
+demo switch is on, which exists to show log masking: with masking on (the
+default) the SDK replaces the value with [REDACTED] in the logs; with the
+"disableLogMasking" switch on, the raw value appears in plain text (the risk
+masking protects against).
 
 Follows the NodeContext contract - receives a single NODE_CONTEXT JSON,
 same as every other node in this repo (see hello-csv-source/main.py).
@@ -56,10 +57,12 @@ def main():
         out_files = ctx["output"]["files"]
         secret_name = config["secretName"]
         print_secret = bool(config.get("printSecretValue", False))
-        mask_logs = bool(config.get("maskSecretsInLogs", True))
+        # Boolean fields have no default in the node contract (an untouched toggle
+        # is off), so the switch is phrased "disable": off = masking on.
+        mask_logs = not bool(config.get("disableLogMasking", False))
 
         log(f"Node: {node['name']} | Fetching secret named {secret_name!r} via env_sdk.get_secret()")
-        log(f"Demo switches: printSecretValue={print_secret} maskSecretsInLogs={mask_logs}")
+        log(f"Demo switches: printSecretValue={print_secret} logMasking={mask_logs}")
 
         try:
             value = env_sdk.get_secret(secret_name, mask=mask_logs)

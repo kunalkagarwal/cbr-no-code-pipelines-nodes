@@ -3,7 +3,7 @@
   "nodeType": "processing",
   "name": "Secret Fetch Test",
   "shortDescription": "Fetches a named secret via pipeline_sdk.env.get_secret() and reports whether it worked — proves the secret manager works inside a real running node",
-  "description": "A minimal source node (no upstream input) that calls pipeline_sdk.env.get_secret(secretName) at run time and writes a small proof file: whether the fetch succeeded, the value's length, and a SHA-256 hash of the value. The real value is never written to any output file, and is not printed to the logs unless the demo switch below is turned on. Two demo switches show log masking: 'Print the real secret value to the logs' deliberately logs the value, and 'Mask secrets in logs' (on by default) decides whether it appears as [REDACTED] or in plain text.",
+  "description": "A minimal source node (no upstream input) that calls pipeline_sdk.env.get_secret(secretName) at run time and writes a small proof file: whether the fetch succeeded, the value's length, and a SHA-256 hash of the value. The real value is never written to any output file, and is not printed to the logs unless the demo switch below is turned on. Two demo switches show log masking: 'Print the real secret value to the logs' deliberately logs the value, and 'Turn OFF log masking' decides whether it appears as [REDACTED] (the default) or in plain text.",
   "lucideIcon": "KeyRound",
   "color": "#6366f1",
   "hasInput": false,
@@ -28,20 +28,20 @@
       "unique": false,
       "placeholder": "e.g. TEST_SECRET",
       "validation": {
-        "patternKey": "snake_case"
+        "patternKey": "identifier"
       }
     },
     "printSecretValue": {
       "type": "boolean",
       "label": "Print the real secret value to the logs (demo)",
-      "description": "Demo only: deliberately logs the fetched secret value so you can see log masking at work. With 'Mask secrets in logs' on it shows [REDACTED]; with it off the raw value appears in plain text in the run logs.",
+      "description": "Demo only: deliberately logs the fetched secret value so you can see log masking at work. With masking on (the default) it shows [REDACTED]; with 'Turn OFF log masking' also on, the raw value appears in plain text in the run logs.",
       "required": false,
       "unique": false
     },
-    "maskSecretsInLogs": {
+    "disableLogMasking": {
       "type": "boolean",
-      "label": "Mask secrets in logs",
-      "description": "When on (default), the SDK replaces any fetched secret with [REDACTED] in everything this node prints. Turn off only to demonstrate what an unmasked log looks like.",
+      "label": "Turn OFF log masking (demo)",
+      "description": "Leave off for normal use: the SDK then replaces any fetched secret with [REDACTED] in everything this node prints. Turn on only to show what an unmasked log looks like.",
       "required": false,
       "unique": false
     }
