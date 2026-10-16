@@ -1,0 +1,8 @@
+{
+  "name": "GeoJSON Demo Source Image",
+  "description": "Write a small GeoJSON of Bengaluru places — a source for trying the map view",
+  "githubUrl": "https://github.com/kunalkagarwal/cbr-no-code-pipelines-nodes",
+  "githubRef": "test/geojson-demo-node",
+  "dockerfilePath": "Dockerfile",
+  "dockerContext": "geojson-demo-source"
+}

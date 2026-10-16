@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "nodeType": "processing",
+  "name": "GeoJSON Demo Source",
+  "shortDescription": "Write a small GeoJSON of Bengaluru places (points, areas, a road) — a source for trying the map view",
+  "description": "Writes one GeoJSON FeatureCollection with a few sample Bengaluru features: landmark points, two park polygons and a road line. Needs no upstream input and no uploaded files. Use it to try the map: open the run and press Map on the output file.",
+  "lucideIcon": "Map",
+  "color": "#10b981",
+  "hasInput": false,
+  "inputDescription": "",
+  "config": {
+    "name": {
+      "type": "string",
+      "label": "Name",
+      "description": "Unique identifier for this source node in the pipeline",
+      "required": true,
+      "unique": true,
+      "placeholder": "e.g. geojson_demo",
+      "validation": {
+        "patternKey": "snake_case"
+      }
+    }
+  },
+  "hasOutput": true,
+  "outputDescription": "A GeoJSON file (FeatureCollection)",
+  "outputFiles": [
+    {
+      "name": "result",
+      "format": "json",
+      "path": "{{artifacts}}/{{pipeline.name}}/{{execution.timestamp}}/{{node.name}}/result.geojson"
+    }
+  ],
+  "implementation": {
+    "type": "container",
+    "entrypoint": "python main.py"
+  }
+}
