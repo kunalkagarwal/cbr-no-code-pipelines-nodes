@@ -1,0 +1,8 @@
+{
+  "name": "GeoJSON URL Source Image",
+  "description": "Download a GeoJSON file from a web address — for trying the map view with real files",
+  "githubUrl": "https://github.com/kunalkagarwal/cbr-no-code-pipelines-nodes",
+  "githubRef": "test/geojson-demo-node",
+  "dockerfilePath": "Dockerfile",
+  "dockerContext": "geojson-url-source"
+}

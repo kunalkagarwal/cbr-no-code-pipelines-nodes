@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "nodeType": "processing",
+  "name": "GeoJSON URL Source",
+  "shortDescription": "Download a GeoJSON file from a web address and write it as the node output — for trying the map view with real files",
+  "description": "Downloads the file at the web address you give (http or https, up to 100 MB), checks that it is JSON, and writes it unchanged as the node output. Needs no upstream input. Use it to try the map view with GeoJSON files from the internet: run the pipeline, open the run, and press Map on the output file.",
+  "lucideIcon": "Globe",
+  "color": "#0ea5e9",
+  "hasInput": false,
+  "inputDescription": "",
+  "config": {
+    "name": {
+      "type": "string",
+      "label": "Name",
+      "description": "Unique identifier for this source node in the pipeline",
+      "required": true,
+      "unique": true,
+      "placeholder": "e.g. geojson_url",
+      "validation": {
+        "patternKey": "snake_case"
+      }
+    },
+    "url": {
+      "type": "string",
+      "label": "GeoJSON URL",
+      "description": "Web address (http or https) of a GeoJSON file to download",
+      "required": true,
+      "unique": false,
+      "placeholder": "e.g. https://example.com/places.geojson"
+    }
+  },
+  "hasOutput": true,
+  "outputDescription": "The downloaded GeoJSON file",
+  "outputFiles": [
+    {
+      "name": "result",
+      "format": "json",
+      "path": "{{artifacts}}/{{pipeline.name}}/{{execution.timestamp}}/{{node.name}}/result.geojson"
+    }
+  ],
+  "implementation": {
+    "type": "container",
+    "entrypoint": "python main.py"
+  }
+}
