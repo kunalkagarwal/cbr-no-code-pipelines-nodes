@@ -1,0 +1,8 @@
+{
+  "name": "Secret Check Source Image",
+  "description": "Fetch a stored secret by name and report whether it worked — for testing the secret manager",
+  "githubUrl": "https://github.com/kunalkagarwal/cbr-no-code-pipelines-nodes",
+  "githubRef": "test/geojson-demo-node",
+  "dockerfilePath": "Dockerfile",
+  "dockerContext": "secret-check-source"
+}

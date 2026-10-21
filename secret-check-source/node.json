@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "nodeType": "processing",
+  "name": "Secret Check Source",
+  "shortDescription": "Fetch one of your stored secrets by name and report whether it worked, without ever writing the value out",
+  "description": "A source node (no input) that fetches the secret you name from your own stored secrets (profile menu, Settings, Secrets) at run time. It logs whether the fetch worked, the value's length and a short hash, prints the value once on purpose so you can see the log mask it as [REDACTED], and writes a small proof file. The real value is never written to the output file. Use only fake test values.",
+  "lucideIcon": "KeyRound",
+  "color": "#6366f1",
+  "hasInput": false,
+  "inputDescription": "",
+  "config": {
+    "name": {
+      "type": "string",
+      "label": "Name",
+      "description": "Unique identifier for this source node in the pipeline",
+      "required": true,
+      "unique": true,
+      "placeholder": "e.g. secret_check",
+      "validation": {
+        "patternKey": "snake_case"
+      }
+    },
+    "secretName": {
+      "type": "string",
+      "label": "Secret Name",
+      "description": "Name of the secret to fetch, exactly as stored (names are uppercase and case-sensitive)",
+      "required": true,
+      "unique": false,
+      "placeholder": "e.g. TEST_SECRET",
+      "validation": {
+        "patternKey": "identifier"
+      }
+    }
+  },
+  "hasOutput": true,
+  "outputDescription": "A JSON proof file: whether the secret was fetched, its length and a short hash, never the value",
+  "outputFiles": [
+    {
+      "name": "result",
+      "format": "json",
+      "path": "{{artifacts}}/{{pipeline.name}}/{{execution.timestamp}}/{{node.name}}/result.json"
+    }
+  ],
+  "implementation": {
+    "type": "container",
+    "entrypoint": "python main.py"
+  }
+}
