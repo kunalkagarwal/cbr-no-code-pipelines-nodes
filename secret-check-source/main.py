@@ -12,14 +12,16 @@ import os
 from pipeline_sdk import context, env
 from pipeline_sdk.context import log
 
-NODE_VERSION = "2026-10-21.1"
+NODE_VERSION = "2026-10-22.1"
 
 
 def handler(ctx: context.NodeContext, workdir: str):
     log(f"Secret check source, version {NODE_VERSION}")
-    name = str(ctx.config.get("secretName") or "").strip()
+    # "secret_name" is the config field id; "secretName" is accepted too, for
+    # pipelines saved before the id was made snake_case.
+    name = str(ctx.config.get("secret_name") or ctx.config.get("secretName") or "").strip()
     if not name:
-        raise ValueError("secretName is required")
+        raise ValueError("secret_name is required")
 
     log(f"Fetching the secret named '{name}' via env.get_secret()")
     value = env.get_secret(name)  # raises EnvError (no value in its message) when missing

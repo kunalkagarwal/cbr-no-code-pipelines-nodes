@@ -20,7 +20,7 @@
         "patternKey": "snake_case"
       }
     },
-    "secretName": {
+    "secret_name": {
       "type": "string",
       "label": "Secret Name",
       "description": "Name of the secret to fetch, exactly as stored (names are uppercase and case-sensitive)",
